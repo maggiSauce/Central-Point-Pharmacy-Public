@@ -1,0 +1,8 @@
+# In this file place the name of the pdf file that you want to add as a template. Ex: ../StudentForms/Templates/UofA.pdf -> UofA
+CDI
+Norquest
+MacEwan
+MACEwanN
+UofA
+NAIT
+TB

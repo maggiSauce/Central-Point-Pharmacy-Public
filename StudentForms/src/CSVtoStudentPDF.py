@@ -6,9 +6,9 @@ from pypdf.generic import NameObject, BooleanObject
 import tkinter as tk
 from tkinter.filedialog import askopenfilename
 
-PDFTEMPLATEPATH = r"C:\Users\small\Central-Point-Pharmacy\StudentForms\Templates"
-PDFEXPORTPATH = r"C:\Users\small\Central-Point-Pharmacy\StudentForms\TempExport"
-# CSVPATH = r"C:\Users\small\Central-Point-Pharmacy\StudentForms\Patient listing report - Copy.csv"
+PDFTEMPLATEPATH = r"C:\Users\small\CodingProjects\Central-Point-Pharmacy-Public\StudentForms\Templates"
+PDFEXPORTPATH = r"C:\Users\small\CodingProjects\Central-Point-Pharmacy-Public\StudentForms\TempExport"
+# CSVPATH = r"C:\Users\small\CodingProjects\Central-Point-Pharmacy-Public\StudentForms\Patient listing report - Copy.csv"
 
 # PDFTEMPLATEPATH = r"C:\Users\kroll\Desktop\School Forms\Templates"
 # PDFEXPORTPATH = r"C:\Users\kroll\Desktop\School Forms\Output"
@@ -148,8 +148,12 @@ def writeToPDF(reader, PDFDict, patientName):
         writer.write(outputStream)
 
 def main():
-    log = open('CSVtoPDFLog.txt', 'w')
+    with open(f"{PDFTEMPLATEPATH}\\PDFNames.txt", 'r') as pdfNamesFile:
+        pdfNamesList = pdfNamesFile.readlines()[1:]
+        for i in range(len(pdfNamesList)):
+            pdfNamesList[i] = pdfNamesList[i].strip()
 
+    log = open('CSVtoPDFLog.txt', 'w')
     tk.Tk().withdraw() # part of the import if you are not using other tkinter functions
 
     chosenCSVPath = askopenfilename()
@@ -170,7 +174,7 @@ def main():
     # print(PDFInfoList)
     
     for i in range(len(PDFInfoList)):
-        if PDFInfoList[i]['School'] in SCHOOLSLIST:
+        if PDFInfoList[i]['School'] in pdfNamesList:
             templatePath = PDFTEMPLATEPATH + '\\' + PDFInfoList[i]['School'] + '.pdf'
         else:
             log.write(f"{PDFInfoList[i]['First Name']} {PDFInfoList[i]['Last Name']} does not attend a listed school")
