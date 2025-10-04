@@ -146,6 +146,7 @@ def writeToPDF(reader, PDFDict, patientName):
 
     with open(path, "wb") as outputStream:     # 'wb' is for write binary mode
         writer.write(outputStream)
+    return (path, patientName + '.pdf')
 
 def main():
     with open(f"{PDFTEMPLATEPATH}\\PDFNames.txt", 'r') as pdfNamesFile:
@@ -157,6 +158,10 @@ def main():
     tk.Tk().withdraw() # part of the import if you are not using other tkinter functions
 
     chosenCSVPath = askopenfilename()
+    if (chosenCSVPath == ''):
+        log.write("No file chosen. Terminating execution\n")
+        tk.messagebox.showinfo("CSV Converter", "No file was selected.")
+        sys.exit(0)
     try:
         PDFInfoList = formatPLR(openFile(chosenCSVPath))
     except KeyError as e:
@@ -173,6 +178,7 @@ def main():
         sys.exit(101)
     # print(PDFInfoList)
     
+    successfulWritesList = []
     for i in range(len(PDFInfoList)):
         if PDFInfoList[i]['School'] in pdfNamesList:
             templatePath = PDFTEMPLATEPATH + '\\' + PDFInfoList[i]['School'] + '.pdf'
@@ -184,14 +190,18 @@ def main():
         try:
             reader = PdfReader(templatePath)
             patientName = f'{PDFInfoList[i]["First Name"]}{PDFInfoList[i]["Last Name"]}'
-            writeToPDF(reader, PDFInfoList[i], patientName)
+            successfulWritesList.append(writeToPDF(reader, PDFInfoList[i], patientName))
         except Exception as e:
             log.write(f"Error reading PDF template or writing to patient PDF: {e}\n")
             log.write(traceback.format_exc())
             tk.messagebox.showinfo("CSV Converter Error", "There was an error converting your CSV. \nPlease read CSVtoPDFLog")
             sys.exit(102)
-
+    log.write(str(successfulWritesList))
     log.write("Exit code 0")
     log.close()
-    tk.messagebox.showinfo("CSV Converter Completed", "Successfully created all eligible pdfs")
+
+    returnMessage = "Successfully created all eligible PDFs:\n"
+    for pathTuple in successfulWritesList:
+        returnMessage += f"{str(pathTuple[1])}\n"
+    tk.messagebox.showinfo("CSV Converter Completed", returnMessage)
 main()
