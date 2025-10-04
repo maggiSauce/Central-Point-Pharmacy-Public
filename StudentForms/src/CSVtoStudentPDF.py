@@ -183,7 +183,7 @@ def main():
         if PDFInfoList[i]['School'] in pdfNamesList:
             templatePath = PDFTEMPLATEPATH + '\\' + PDFInfoList[i]['School'] + '.pdf'
         else:
-            log.write(f"{PDFInfoList[i]['First Name']} {PDFInfoList[i]['Last Name']} does not attend a listed school")
+            log.write(f"{PDFInfoList[i]['First Name']} {PDFInfoList[i]['Last Name']} does not attend a listed school\n")
             print(f"{PDFInfoList[i]['First Name']} {PDFInfoList[i]['Last Name']} does not attend a listed school")
             continue
 
@@ -196,7 +196,7 @@ def main():
             log.write(traceback.format_exc())
             tk.messagebox.showinfo("CSV Converter Error", "There was an error converting your CSV. \nPlease read CSVtoPDFLog")
             sys.exit(102)
-    log.write(str(successfulWritesList))
+    log.write(str(successfulWritesList) + '\n')
     log.write("Exit code 0")
     log.close()
 
