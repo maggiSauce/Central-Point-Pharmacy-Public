@@ -1,4 +1,5 @@
 import csv
+from email.policy import default
 import sys
 import traceback
 import json
@@ -20,6 +21,18 @@ if getattr(sys, 'frozen', False):
     BASE = Path(sys.executable).parent
 else:
     BASE = Path(__file__).parent
+
+if not os.path.exists(f"{BASE}/config.json"):
+    defaultConfig = {
+        "pdfTemplatePath": f"{BASE}\\Templates",
+        "pdfExportPath": f"{BASE}\\Output"
+    }
+    os.makedirs(defaultConfig["pdfTemplatePath"])
+    os.makedirs(defaultConfig["pdfExportPath"])
+    with open (f"{defaultConfig['pdfTemplatePath']}/PDFNames.txt", "w") as temp:
+        temp.write("Place the names of the pdf file that you want to add as templates. Ex: UofA for UofA.pdf\nAn associated pdf file must be in the Templates folder")
+    with open (f"{BASE}/config.json", "w") as configFile:
+        json.dump(defaultConfig, configFile, indent=4)
 with open (f"{BASE}/config.json", "r") as configFile:
     config = json.load(configFile)
 
