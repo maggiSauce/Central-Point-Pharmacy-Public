@@ -2,6 +2,7 @@ import csv
 import sys
 import traceback
 import json
+import os
 from pypdf import PdfReader, PdfWriter
 from pypdf.generic import NameObject, BooleanObject
 import tkinter as tk
@@ -166,7 +167,9 @@ def main():
         for i in range(len(pdfNamesList)):
             pdfNamesList[i] = pdfNamesList[i].strip().lower()
 
-    log = open('CSVtoPDFLog.txt', 'w')
+    base = os.path.dirname(__file__)
+    os.makedirs(f"{base}/CsvToPDFConverterLogs", exist_ok=True)
+    log = open(f'{base}/CsvToPDFConverterLogs/CSVtoPDFLog.txt', 'w')
     tk.Tk().withdraw() # part of the import if you are not using other tkinter functions
 
     chosenCSVPath = askopenfilename()
@@ -215,7 +218,7 @@ def main():
     for pathTuple in successfulWritesList:
         returnMessage += f"{str(pathTuple[1])}\n"
     try:
-        collectData(len(successfulWritesList), PDFTEMPLATEPATH + "\\dataCollection.json")
+        collectData(len(successfulWritesList), f"{base}/CsvToPDFConverterLogs/dataCollection.json")
     except Exception as e:
         log.write("\nData collection error: {e}")
         log.write(traceback.format_exc())
