@@ -1,6 +1,7 @@
 import csv
 import sys
 import traceback
+import json
 from pypdf import PdfReader, PdfWriter
 from pypdf.generic import NameObject, BooleanObject
 import tkinter as tk
@@ -12,12 +13,6 @@ PDFEXPORTPATH = r"C:\Users\small\CodingProjects\Central-Point-Pharmacy-Public\St
 
 # PDFTEMPLATEPATH = r"C:\Users\kroll\Desktop\School Forms\Templates"
 # PDFEXPORTPATH = r"C:\Users\kroll\Desktop\School Forms\Output"
-
-SCHOOLSLIST = ["CDI",
-               "Norquest",
-               "MacEwan",
-               "UofA",
-               "NAIT"]
 
 def openFile(filepath:str) -> list:
     '''
@@ -148,11 +143,28 @@ def writeToPDF(reader, PDFDict, patientName):
         writer.write(outputStream)
     return (path, patientName + '.pdf')
 
+def collectData(numSuccessfulWrites, dataFilePath):
+    try:
+        with open(dataFilePath, "r") as dataFile:
+            data = json.load(dataFile)
+            data["numUses"] += 1
+            data["PDFsGenerated"] += numSuccessfulWrites
+    except FileNotFoundError:
+        data = {
+            "numUses": 1, 
+            "PDFsGenerated": numSuccessfulWrites
+        }
+    except Exception as e:
+        raise e
+
+    with open(dataFilePath, "w") as dataFile:
+        json.dump(data, dataFile, indent=4)
+
 def main():
     with open(f"{PDFTEMPLATEPATH}\\PDFNames.txt", 'r') as pdfNamesFile:
         pdfNamesList = pdfNamesFile.readlines()[1:]
         for i in range(len(pdfNamesList)):
-            pdfNamesList[i] = pdfNamesList[i].strip()
+            pdfNamesList[i] = pdfNamesList[i].strip().lower()
 
     log = open('CSVtoPDFLog.txt', 'w')
     tk.Tk().withdraw() # part of the import if you are not using other tkinter functions
@@ -180,7 +192,7 @@ def main():
     
     successfulWritesList = []
     for i in range(len(PDFInfoList)):
-        if PDFInfoList[i]['School'] in pdfNamesList:
+        if PDFInfoList[i]['School'].lower() in pdfNamesList:
             templatePath = PDFTEMPLATEPATH + '\\' + PDFInfoList[i]['School'] + '.pdf'
         else:
             log.write(f"{PDFInfoList[i]['First Name']} {PDFInfoList[i]['Last Name']} does not attend a listed school\n")
@@ -198,10 +210,17 @@ def main():
             sys.exit(102)
     log.write(str(successfulWritesList) + '\n')
     log.write("Exit code 0")
-    log.close()
 
     returnMessage = "Successfully created all eligible PDFs:\n"
     for pathTuple in successfulWritesList:
         returnMessage += f"{str(pathTuple[1])}\n"
+    try:
+        collectData(len(successfulWritesList), PDFTEMPLATEPATH + "\\dataCollection.json")
+    except Exception as e:
+        log.write("\nData collection error: {e}")
+        log.write(traceback.format_exc())
+        returnMessage += f"\n\nError collecting data {e}.\n\n This is non critical and can be ignored."
+        
+    log.close()
     tk.messagebox.showinfo("CSV Converter Completed", returnMessage)
 main()
