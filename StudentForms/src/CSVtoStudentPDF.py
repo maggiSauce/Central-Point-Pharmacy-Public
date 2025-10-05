@@ -25,6 +25,8 @@ with open (f"{base}/config.json", "r") as configFile:
 
 PDFTEMPLATEPATH = config["pdfTemplatePath"]
 PDFEXPORTPATH = config["pdfExportPath"]
+if not os.path.exists(PDFEXPORTPATH):
+    os.makedirs(PDFEXPORTPATH)
 
 def openFile(filepath:str) -> list:
     '''
