@@ -17,10 +17,10 @@ from tkinter.filedialog import askopenfilename
 # PDFEXPORTPATH = r"C:\Users\kroll\Desktop\School Forms\Output"
 
 if getattr(sys, 'frozen', False):
-    base = Path(sys.executable).parent
+    BASE = Path(sys.executable).parent
 else:
-    base = Path(__file__).parent
-with open (f"{base}/config.json", "r") as configFile:
+    BASE = Path(__file__).parent
+with open (f"{BASE}/config.json", "r") as configFile:
     config = json.load(configFile)
 
 PDFTEMPLATEPATH = config["pdfTemplatePath"]
@@ -180,9 +180,8 @@ def main():
         for i in range(len(pdfNamesList)):
             pdfNamesList[i] = pdfNamesList[i].strip().lower()
 
-    base = os.path.dirname(__file__)
-    os.makedirs(f"{base}/CsvToPDFConverterLogs", exist_ok=True)
-    log = open(f'{base}/CsvToPDFConverterLogs/CSVtoPDFLog.txt', 'w')
+    os.makedirs(f"{BASE}/CsvToPDFConverterLogs", exist_ok=True)
+    log = open(f'{BASE}/CsvToPDFConverterLogs/CSVtoPDFLog.txt', 'w')
     tk.Tk().withdraw() # part of the import if you are not using other tkinter functions
 
     chosenCSVPath = askopenfilename()
@@ -231,7 +230,7 @@ def main():
     for pathTuple in successfulWritesList:
         returnMessage += f"{str(pathTuple[1])}\n"
     try:
-        collectData(len(successfulWritesList), f"{base}/CsvToPDFConverterLogs/dataCollection.json")
+        collectData(len(successfulWritesList), f"{BASE}/CsvToPDFConverterLogs/dataCollection.json")
     except Exception as e:
         log.write("\nData collection error: {e}")
         log.write(traceback.format_exc())
