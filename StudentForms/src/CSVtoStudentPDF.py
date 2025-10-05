@@ -8,12 +8,18 @@ from pypdf.generic import NameObject, BooleanObject
 import tkinter as tk
 from tkinter.filedialog import askopenfilename
 
-PDFTEMPLATEPATH = r"C:\Users\small\CodingProjects\Central-Point-Pharmacy-Public\StudentForms\Templates"
-PDFEXPORTPATH = r"C:\Users\small\CodingProjects\Central-Point-Pharmacy-Public\StudentForms\TempExport"
+# PDFTEMPLATEPATH = r"C:\Users\small\CodingProjects\Central-Point-Pharmacy-Public\StudentForms\Templates"
+# PDFEXPORTPATH = r"C:\Users\small\CodingProjects\Central-Point-Pharmacy-Public\StudentForms\TempExport"
 # CSVPATH = r"C:\Users\small\CodingProjects\Central-Point-Pharmacy-Public\StudentForms\Patient listing report - Copy.csv"
 
 # PDFTEMPLATEPATH = r"C:\Users\kroll\Desktop\School Forms\Templates"
 # PDFEXPORTPATH = r"C:\Users\kroll\Desktop\School Forms\Output"
+
+with open ("config.json", "r") as configFile:
+    config = json.load(configFile)
+
+PDFTEMPLATEPATH = config["pdfTemplatePath"]
+PDFEXPORTPATH = config["pdfExportPath"]
 
 def openFile(filepath:str) -> list:
     '''
