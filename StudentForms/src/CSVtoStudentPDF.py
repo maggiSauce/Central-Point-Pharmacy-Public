@@ -3,6 +3,7 @@ import sys
 import traceback
 import json
 import os
+from pathlib import Path
 from pypdf import PdfReader, PdfWriter
 from pypdf.generic import NameObject, BooleanObject
 import tkinter as tk
@@ -15,7 +16,11 @@ from tkinter.filedialog import askopenfilename
 # PDFTEMPLATEPATH = r"C:\Users\kroll\Desktop\School Forms\Templates"
 # PDFEXPORTPATH = r"C:\Users\kroll\Desktop\School Forms\Output"
 
-with open ("config.json", "r") as configFile:
+if getattr(sys, 'frozen', False):
+    base = Path(sys.executable).parent
+else:
+    base = Path(__file__).parent
+with open (f"{base}/config.json", "r") as configFile:
     config = json.load(configFile)
 
 PDFTEMPLATEPATH = config["pdfTemplatePath"]
