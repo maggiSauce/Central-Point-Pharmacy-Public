@@ -27,3 +27,19 @@ PHN: 88888",,,,,,Home: (780) 111-1111,,,,,,,Norquest,Test,,,,,,,,,,,
 Program: Computer science
 StudentNumber: 123456
 PHN: 88888",,,,,,Home: (780) 111-1111,,,,,,,UofA,Test,,,,,,,,,,,
+,"TB, test",TB address,,Edmonton,ab,MAC AAA,,01-01-2001,,F,,"General: School: TB
+Program: Computer science
+StudentNumber: 123456
+PHN: 88888",,,,,,Home: (780) 111-1111,,,,,,,TB,Test,,,,,,,,,,,
+,"MacewanN, test",Nait address,,Edmonton,ab,MAC AAA,,01-01-2001,,F,,"General: School: MAcEwanN
+Program: Computer science
+StudentNumber: 123456
+PHN: 88888",,,,,,Home: (780) 111-1111,,,,,,,MacEwanN,Test,,,,,,,,,,,
+,"BrokenTb, test",Nait address,,Edmonton,ab,MAC AAA,,01-01-2001,,F,,"General: School: Tb
+Program: Computer science
+StudentNumber: 123456
+PHN: 88888",,,,,,Home: (780) 111-1111,,,,,,,BrokenTB,Test,,,,,,,,,,,
+,"BrokenUofA, test",Nait address,,Edmonton,ab,MAC AAA,,01-01-2001,,F,,"General: School: uOFa
+Program: Computer science
+StudentNumber: 123456
+PHN: 88888",,,,,,Home: (780) 111-1111,,,,,,,BrokenUofA,Test,,,,,,,,,,,

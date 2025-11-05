@@ -1,23 +1,45 @@
 import csv
+from email.policy import default
 import sys
 import traceback
+import json
+import os
+from pathlib import Path
 from pypdf import PdfReader, PdfWriter
 from pypdf.generic import NameObject, BooleanObject
 import tkinter as tk
 from tkinter.filedialog import askopenfilename
 
-PDFTEMPLATEPATH = r"C:\Users\small\Central-Point-Pharmacy\StudentForms\Templates"
-PDFEXPORTPATH = r"C:\Users\small\Central-Point-Pharmacy\StudentForms\TempExport"
-# CSVPATH = r"C:\Users\small\Central-Point-Pharmacy\StudentForms\Patient listing report - Copy.csv"
+# PDFTEMPLATEPATH = r"C:\Users\small\CodingProjects\Central-Point-Pharmacy-Public\StudentForms\Templates"
+# PDFEXPORTPATH = r"C:\Users\small\CodingProjects\Central-Point-Pharmacy-Public\StudentForms\TempExport"
+# CSVPATH = r"C:\Users\small\CodingProjects\Central-Point-Pharmacy-Public\StudentForms\Patient listing report - Copy.csv"
 
 # PDFTEMPLATEPATH = r"C:\Users\kroll\Desktop\School Forms\Templates"
 # PDFEXPORTPATH = r"C:\Users\kroll\Desktop\School Forms\Output"
 
-SCHOOLSLIST = ["CDI",
-               "Norquest",
-               "MacEwan",
-               "UofA",
-               "NAIT"]
+if getattr(sys, 'frozen', False):
+    BASE = Path(sys.executable).parent
+else:
+    BASE = Path(__file__).parent
+
+if not os.path.exists(f"{BASE}/config.json"):
+    defaultConfig = {
+        "pdfTemplatePath": f"{BASE}\\Templates",
+        "pdfExportPath": f"{BASE}\\Output"
+    }
+    os.makedirs(defaultConfig["pdfTemplatePath"])
+    os.makedirs(defaultConfig["pdfExportPath"])
+    with open (f"{defaultConfig['pdfTemplatePath']}/PDFNames.txt", "w") as temp:
+        temp.write("Place the names of the pdf file that you want to add as templates. Ex: UofA for UofA.pdf\nAn associated pdf file must be in the Templates folder")
+    with open (f"{BASE}/config.json", "w") as configFile:
+        json.dump(defaultConfig, configFile, indent=4)
+with open (f"{BASE}/config.json", "r") as configFile:
+    config = json.load(configFile)
+
+PDFTEMPLATEPATH = config["pdfTemplatePath"]
+PDFEXPORTPATH = config["pdfExportPath"]
+if not os.path.exists(PDFEXPORTPATH):
+    os.makedirs(PDFEXPORTPATH)
 
 def openFile(filepath:str) -> list:
     '''
@@ -146,13 +168,40 @@ def writeToPDF(reader, PDFDict, patientName):
 
     with open(path, "wb") as outputStream:     # 'wb' is for write binary mode
         writer.write(outputStream)
+    return (path, patientName + '.pdf')
+
+def collectData(numSuccessfulWrites, dataFilePath):
+    try:
+        with open(dataFilePath, "r") as dataFile:
+            data = json.load(dataFile)
+            data["numUses"] += 1
+            data["PDFsGenerated"] += numSuccessfulWrites
+    except FileNotFoundError:
+        data = {
+            "numUses": 1, 
+            "PDFsGenerated": numSuccessfulWrites
+        }
+    except Exception as e:
+        raise e
+
+    with open(dataFilePath, "w") as dataFile:
+        json.dump(data, dataFile, indent=4)
 
 def main():
-    log = open('CSVtoPDFLog.txt', 'w')
+    with open(f"{PDFTEMPLATEPATH}\\PDFNames.txt", 'r') as pdfNamesFile:
+        pdfNamesList = pdfNamesFile.readlines()[1:]
+        for i in range(len(pdfNamesList)):
+            pdfNamesList[i] = pdfNamesList[i].strip().lower()
 
+    os.makedirs(f"{BASE}/CsvToPDFConverterLogs", exist_ok=True)
+    log = open(f'{BASE}/CsvToPDFConverterLogs/CSVtoPDFLog.txt', 'w')
     tk.Tk().withdraw() # part of the import if you are not using other tkinter functions
 
     chosenCSVPath = askopenfilename()
+    if (chosenCSVPath == ''):
+        log.write("No file chosen. Terminating execution\n")
+        tk.messagebox.showinfo("CSV Converter", "No file was selected.")
+        sys.exit(0)
     try:
         PDFInfoList = formatPLR(openFile(chosenCSVPath))
     except KeyError as e:
@@ -169,25 +218,37 @@ def main():
         sys.exit(101)
     # print(PDFInfoList)
     
+    successfulWritesList = []
     for i in range(len(PDFInfoList)):
-        if PDFInfoList[i]['School'] in SCHOOLSLIST:
+        if PDFInfoList[i]['School'].lower() in pdfNamesList:
             templatePath = PDFTEMPLATEPATH + '\\' + PDFInfoList[i]['School'] + '.pdf'
         else:
-            log.write(f"{PDFInfoList[i]['First Name']} {PDFInfoList[i]['Last Name']} does not attend a listed school")
+            log.write(f"{PDFInfoList[i]['First Name']} {PDFInfoList[i]['Last Name']} does not attend a listed school\n")
             print(f"{PDFInfoList[i]['First Name']} {PDFInfoList[i]['Last Name']} does not attend a listed school")
             continue
 
         try:
             reader = PdfReader(templatePath)
             patientName = f'{PDFInfoList[i]["First Name"]}{PDFInfoList[i]["Last Name"]}'
-            writeToPDF(reader, PDFInfoList[i], patientName)
+            successfulWritesList.append(writeToPDF(reader, PDFInfoList[i], patientName))
         except Exception as e:
             log.write(f"Error reading PDF template or writing to patient PDF: {e}\n")
             log.write(traceback.format_exc())
             tk.messagebox.showinfo("CSV Converter Error", "There was an error converting your CSV. \nPlease read CSVtoPDFLog")
             sys.exit(102)
-
+    log.write(str(successfulWritesList) + '\n')
     log.write("Exit code 0")
+
+    returnMessage = "Successfully created all eligible PDFs:\n"
+    for pathTuple in successfulWritesList:
+        returnMessage += f"{str(pathTuple[1])}\n"
+    try:
+        collectData(len(successfulWritesList), f"{BASE}/CsvToPDFConverterLogs/dataCollection.json")
+    except Exception as e:
+        log.write("\nData collection error: {e}")
+        log.write(traceback.format_exc())
+        returnMessage += f"\n\nError collecting data {e}.\n\n This is non critical and can be ignored."
+        
     log.close()
-    tk.messagebox.showinfo("CSV Converter Completed", "Successfully created all eligible pdfs")
+    tk.messagebox.showinfo("CSV Converter Completed", returnMessage)
 main()
